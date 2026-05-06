@@ -71,7 +71,8 @@ def init_db():
             unit_price=15.00,
             gst_rate=12.0,
             current_stock=80,
-            min_stock_level=15
+            min_stock_level=15,
+            is_demo=True
         )
     ]
     db.add_all(meds)
