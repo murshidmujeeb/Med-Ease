@@ -1,7 +1,32 @@
-﻿venv/
+venv/
+.venv/
 __pycache__/
 *.pyc
 db.sqlite3
 .env
+.env.local
+.env.*.local
 .idea/
 .vscode/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+build/
+frontend/.vite/
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Databases
+*.db
+
+# Uploads
+uploads/
+backend/uploads/
