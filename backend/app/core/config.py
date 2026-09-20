@@ -10,20 +10,25 @@ class Settings(BaseSettings):
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "pharmacy_db")
-    # Use absolute path for sqlite to avoid wd issues
-    # On Vercel, this should be overridden by a DATABASE_URL env var pointing to a hosted Postgres DB.
+    # Use DATABASE_URL / POSTGRES_URL if provided (e.g. Supabase, Neon, RDS), otherwise absolute path to pharmacy.db
     SQLALCHEMY_DATABASE_URI: Optional[str] = os.getenv(
         "DATABASE_URL",
-        f"sqlite:///{os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../pharmacy.db'))}"
+        os.getenv(
+            "POSTGRES_URL",
+            f"sqlite:///{os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../pharmacy.db'))}"
+        )
     )
     
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
     
     @property
     def database_url(self) -> str:
-        if self.SQLALCHEMY_DATABASE_URI:
-            return self.SQLALCHEMY_DATABASE_URI
-        # Fallback to Postgres only if specifically configured env vars are present (logic optional, but sticking to URI priority)
+        url = self.SQLALCHEMY_DATABASE_URI
+        if url:
+            # Handle postgres:// vs postgresql:// for SQLAlchemy compatibility
+            if url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql://", 1)
+            return url
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"
 
     class Config:

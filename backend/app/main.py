@@ -1,8 +1,9 @@
 import sys
 import os
 
-# Add backend directory to sys.path to fix Vercel imports
-BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Ensure 'backend' directory is in Python path for Vercel serverless execution
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BACKEND_DIR = os.path.dirname(CURRENT_DIR)
 if BACKEND_DIR not in sys.path:
     sys.path.insert(0, BACKEND_DIR)
 
@@ -27,7 +28,8 @@ ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    # Allow all origins for this demo. In production, list specific domains e.g. ["https://medease-app.vercel.app"]
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
