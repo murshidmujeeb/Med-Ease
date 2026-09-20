@@ -9,19 +9,11 @@ if BACKEND_DIR not in sys.path:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 from app.api import endpoints
 from app.core.config import settings
 import uvicorn
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Initialize the database on startup
-    from app.db_init import init_db
-    init_db()
-    yield
-
-app = FastAPI(title=settings.PROJECT_NAME, lifespan=lifespan)
+app = FastAPI(title=settings.PROJECT_NAME)
 
 # Widen CORS origins for Vercel preview deployments
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
