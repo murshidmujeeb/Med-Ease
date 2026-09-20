@@ -28,8 +28,20 @@ class Settings(BaseSettings):
             # Handle postgres:// vs postgresql:// for SQLAlchemy compatibility
             if url.startswith("postgres://"):
                 url = url.replace("postgres://", "postgresql://", 1)
+            
+            # Switch to pure python pg8000 driver for Vercel compatibility
+            if url.startswith("postgresql://"):
+                url = url.replace("postgresql://", "postgresql+pg8000://", 1)
+                
+            # Supabase connection pooler requires SSL mode
+            if "pg8000" in url and "sslmode=require" not in url:
+                if "?" in url:
+                    url += "&sslmode=require"
+                else:
+                    url += "?sslmode=require"
+                    
             return url
-        return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"
+        return f"postgresql+pg8000://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"
 
     class Config:
         case_sensitive = True

@@ -214,14 +214,19 @@ async def scan_prescription(
     
     for m in medicines_with_pricing:
         if m["found_in_inventory"]:
+             # Calculate missing fields if they aren't explicitly set
+             line_total = m.get("line_total", 0.0)
+             gst_amount = m.get("gst_amount", line_total * 0.12) # Assume 12% GST if missing
+             item_total = m.get("item_total", line_total + gst_amount)
+
              bill_item = BillItem(
                 bill_id=bill.id,
                 medicine_id=m["medicine_id"],
                 quantity=m["quantity_prescribed"],
                 unit_price=m["unit_price"],
-                line_total=m["line_total"],
-                gst_amount=m["gst_amount"],
-                item_total=m["item_total"],
+                line_total=line_total,
+                gst_amount=gst_amount,
+                item_total=item_total,
                 dosage_frequency=m.get("frequency"),
                 dosage_duration=m.get("duration"),
             )
