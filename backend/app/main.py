@@ -1,3 +1,12 @@
+import sys
+import os
+
+# Ensure 'backend' directory is in Python path for Vercel serverless execution
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+BACKEND_DIR = os.path.dirname(CURRENT_DIR)
+if BACKEND_DIR not in sys.path:
+    sys.path.insert(0, BACKEND_DIR)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import endpoints
@@ -9,7 +18,7 @@ app = FastAPI(title=settings.PROJECT_NAME)
 app.add_middleware(
     CORSMiddleware,
     # Allow all origins for this demo. In production, list specific domains e.g. ["https://medease-app.vercel.app"]
-    allow_origins=["https://medease-app.vercel.app", "http://localhost:5173", "http://localhost:3000"], 
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
