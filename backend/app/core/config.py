@@ -33,6 +33,11 @@ class Settings(BaseSettings):
             if url.startswith("postgresql://"):
                 url = url.replace("postgresql://", "postgresql+pg8000://", 1)
                 
+            # Remove pgbouncer=true as Python DB drivers (pg8000/psycopg2) crash on this parameter
+            if "pgbouncer=true" in url:
+                url = url.replace("pgbouncer=true", "")
+                url = url.replace("?&", "?").replace("&&", "&").rstrip("?&")
+                
             # Supabase connection pooler requires SSL mode
             if "pg8000" in url and "sslmode=require" not in url:
                 if "?" in url:
