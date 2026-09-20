@@ -11,7 +11,11 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
     POSTGRES_DB: str = os.getenv("POSTGRES_DB", "pharmacy_db")
     # Use absolute path for sqlite to avoid wd issues
-    SQLALCHEMY_DATABASE_URI: Optional[str] = f"sqlite:///{os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../pharmacy.db'))}"
+    # On Vercel, this should be overridden by a DATABASE_URL env var pointing to a hosted Postgres DB.
+    SQLALCHEMY_DATABASE_URI: Optional[str] = os.getenv(
+        "DATABASE_URL",
+        f"sqlite:///{os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../pharmacy.db'))}"
+    )
     
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
     

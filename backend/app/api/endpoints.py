@@ -31,15 +31,10 @@ def generate_bill_number():
 
 def authenticate_pharmacist_by_pin(pin: str, db: Session):
     clean_pin = str(pin).strip()
-    print(f"DEBUG AUTH: Checking PIN: '{clean_pin}'")
     pharmacist = db.query(Pharmacist).filter(Pharmacist.pin_hash == clean_pin, Pharmacist.is_active == True).first()
     if not pharmacist and clean_pin == "1234":
         # Fallback to any active pharmacist or default admin if db records diverged
         pharmacist = db.query(Pharmacist).filter(Pharmacist.is_active == True).first()
-    if pharmacist:
-        print(f"DEBUG AUTH: Found Pharmacist: {pharmacist.name}")
-    else:
-        print("DEBUG AUTH: No pharmacist found with this PIN.")
     return pharmacist
 
 # --- Endpoints ---
@@ -50,21 +45,17 @@ async def scan_prescription(
     is_demo: bool = Query(False),
     db: Session = Depends(get_db)
 ):
-    # 1. Save uploaded image
-    upload_dir = Path("uploads/prescriptions")
-    upload_dir.mkdir(parents=True, exist_ok=True)
-    file_path = upload_dir / f"{uuid4()}.jpg"
-    
-    with open(file_path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
+    # 1. Read uploaded image bytes directly (serverless-friendly)
+    image_bytes = await file.read()
         
     # 2. Call Gemini
-    # Convert path to string for service
-    extraction = await extract_medicines_from_prescription(str(file_path))
+    extraction = await extract_medicines_from_prescription(image_bytes)
     
     # 3. Create prescription record
+    # Since we can't save files locally on Vercel, we'll store a placeholder or cloud URL.
+    # For now, we'll just store the filename. In a real app, upload to S3/Cloudinary first.
     prescription = Prescription(
-        image_path=str(file_path),
+        image_path=f"memory://{file.filename or uuid4()}",
         gemini_extraction_response=extraction,
         extraction_confidence=extraction.get("prescription_metadata", {}).get("overall_confidence", 0.0),
         is_readable=extraction.get("extraction_quality", {}).get("is_readable", False)

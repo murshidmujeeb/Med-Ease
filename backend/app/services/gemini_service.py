@@ -1,4 +1,4 @@
-﻿import google.generativeai as genai
+import google.generativeai as genai
 import json
 import base64
 from pathlib import Path
@@ -53,28 +53,21 @@ You are a pharmaceutical data extraction specialist. Analyze this prescription i
     }
     """
 
-async def extract_medicines_from_prescription(image_path: str) -> dict:
+async def extract_medicines_from_prescription(image_bytes: bytes) -> dict:
     try:
         # Using generic alias 'gemini-flash-latest' which maps to the current stable Flash model
         # If this fails with 429, the user MUST enable billing on their Google Cloud Project.
         model = genai.GenerativeModel('gemini-flash-latest') 
         
-        print(f"Processing image: {image_path}")
-        
-        # Load image
-        if not Path(image_path).exists():
-             raise FileNotFoundError(f"Image not found at {image_path}")
-             
-        with open(image_path, "rb") as f:
-            image_data = f.read()
+        print("Processing image bytes...")
             
         parts = [
-            {"mime_type": "image/jpeg", "data": image_data},
+            {"mime_type": "image/jpeg", "data": image_bytes},
             {"text": VISION_PROMPT}
         ]
         
         print("Sending request to Gemini...")
-        response = model.generate_content(parts)
+        response = model.generate_content(parts, request_options={"timeout": 30})
         print(f"Gemini Raw Response: {response.text}")
         
         # Clean response text (remove markdown code blocks if any)
